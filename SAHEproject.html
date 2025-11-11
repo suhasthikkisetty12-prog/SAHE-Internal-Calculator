@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRSEC Internal Marks Calculator</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(135deg, #6b34ff, #4aa3ff);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: white;
+    }
+
+    h1 {
+        margin-top: 35px;
+        font-size: 34px;
+        font-weight: 700;
+        color: #ffcc00;
+        text-align: center;
+    }
+
+    h2 {
+        margin-top: -10px;
+        font-size: 20px;
+        color: #ffcc00;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    h3 {
+        margin-top: 15px;
+        font-size: 21px;
+        text-align: center;
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    .box {
+        background: white;
+        width: 380px;
+        padding: 25px;
+        border-radius: 14px;
+        margin-top: 15px;
+        text-align: center;
+        color: black;
+        box-shadow: 0 5px 18px rgba(0,0,0,0.25);
+    }
+
+    .green-text {
+        color: green;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    input {
+        width: 90%;
+        padding: 12px;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        outline: none;
+    }
+
+    button {
+        margin-top: 15px;
+        padding: 10px 25px;
+        font-size: 15px;
+        background: #f2f2f2;
+        border: 1px solid #444;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #ddd;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 14px;
+    }
+    table, th, td {
+        border: 1px solid #ccc;
+    }
+    th, td {
+        padding: 6px;
+        text-align: center;
+    }
+    th {
+        background: #f2f2f2;
+    }
+</style>
+</head>
+<body>
+
+<h1>SIDDHARTHA ACADEMY OF HIGHER EDUCATION</h1>
+<h2>Deemed to be University</h2>
+
+<h3>INTERNAL MARKS CALCULATOR</h3>
+
+<div class="box">
+
+    <div class="green-text">Internal Marks Calculator</div>
+
+    <input type="number" id="ct1" placeholder="Class Test 1 (out of 10)" min="0" max="10" step="1">
+    <input type="number" id="ct2" placeholder="Class Test 2 (out of 10)" min="0" max="10" step="1">
+    <input type="number" id="s1" placeholder="Sessional 1 (out of 20)" min="0" max="20" step="1">
+    <input type="number" id="s2" placeholder="Sessional 2 (out of 20)" min="0" max="20" step="1">
+    <input type="number" id="home" placeholder="Home Assignment (out of 10)" min="0" max="10" step="1">
+
+    <button onclick="calc()">Calculate Internal Marks</button>
+
+    <div id="result" style="margin-top:15px; font-weight:600;"></div>
+
+    <div id="reqTable"></div>
+</div>
+
+<script>
+function calc() {
+    // read integer values
+    let ct1 = parseInt(document.getElementById('ct1').value);
+    let ct2 = parseInt(document.getElementById('ct2').value);
+    let s1 = parseInt(document.getElementById('s1').value);
+    let s2 = parseInt(document.getElementById('s2').value);
+    let home = parseInt(document.getElementById('home').value);
+
+    if (isNaN(ct1) || isNaN(ct2) || isNaN(s1) || isNaN(s2) || isNaN(home)) {
+        document.getElementById('result').innerHTML =
+        "<span style='color:red;'>Please enter all values.</span>";
+        document.getElementById('reqTable').innerHTML = "";
+        return;
+    }
+
+    // internal calculations
+    let class_test = Math.round((2/3 * Math.max(ct1, ct2)) + (1/3 * Math.min(ct1, ct2)));
+    let sessional = Math.round((2/3 * Math.max(s1, s2)) + (1/3 * Math.min(s1, s2)));
+    let internal_total = class_test + sessional + home; // out of 40
+
+    if (internal_total > 40) internal_total = 40;
+
+    document.getElementById('result').innerHTML =
+        "Class Test Marks: " + class_test + "<br>" +
+        "Sessional Marks: " + sessional + "<br>" +
+        "Home Assignment: " + home + "<br>" +
+        "<b>Total Internal Marks (out of 40): " + internal_total + "</b>";
+
+    // Grade requirement table (theory)
+    let bands = [
+        {name: "Ex", min: 90},
+        {name: "A+", min: 80},
+        {name: "A", min: 70},
+        {name: "B+", min: 60},
+        {name: "B", min: 55},
+        {name: "C", min: 50},
+        {name: "F (Fail)", min: 0}
+    ];
+
+    let tableHtml = "<table><tr><th>Target Grade</th><th>Needed Grand Total (%)</th><th>Required End-Exam Marks (out of 100)</th></tr>";
+
+    bands.forEach(b => {
+        let target = b.min;
+        // compute required raw exam marks: target = internal_total + exam_raw * 0.6
+        let requiredRaw = (target - internal_total) / 0.6;
+        let display;
+        if (requiredRaw <= 0) display = "0";
+        else if (requiredRaw > 100) display = "Not possible (>100)";
+        else display = Math.ceil(requiredRaw); // round up to next integer
+        tableHtml += "<tr><td>" + b.name + "</td><td>" + target + "</td><td>" + display + "</td></tr>";
+    });
+
+    tableHtml += "</table>";
+    document.getElementById('reqTable').innerHTML = tableHtml;
+}
+</script>
+
+</body>
+</html>
